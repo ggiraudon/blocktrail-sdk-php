@@ -338,7 +338,7 @@ class WalletTest extends BlocktrailTestCase {
         $this->assertTrue($segwitScript->isP2WSH());
 
         // Fund segwit address
-        $value = BlocktrailSDK::toSatoshi(0.0002);
+        $value = BlocktrailSDK::toSatoshi(0.0004);
         $fundTxHash = $unittestWallet->pay([$segwitAddress => $value,], null, false, true, Wallet::FEE_STRATEGY_BASE_FEE);
 
         $this->assertTrue(!!$fundTxHash);
