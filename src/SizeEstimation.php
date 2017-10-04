@@ -2,6 +2,8 @@
 
 namespace Blocktrail\SDK;
 
+use BitWasp\Bitcoin\Script\ScriptFactory;
+use BitWasp\Bitcoin\Script\ScriptType;
 use BitWasp\Bitcoin\Crypto\EcAdapter\Key\PublicKeyInterface;
 use \BitWasp\Bitcoin\Script\ScriptInfo\Multisig;
 use \BitWasp\Bitcoin\Script\ScriptInfo\PayToPubKey;
@@ -166,10 +168,12 @@ class SizeEstimation
      * @param ScriptInterface $script - not the scriptPubKey, might be SPK,RS,WS
      * @param ScriptInterface|null $redeemScript
      * @param ScriptInterface $witnessScript
+     * @param bool $isWitness
      * @return array
      */
-    public static function estimateInputSize(ScriptInterface $script, ScriptInterface $redeemScript = null, ScriptInterface $witnessScript = null, $isWitness)
+    public static function estimateInputFromScripts(ScriptInterface $script, ScriptInterface $redeemScript = null, ScriptInterface $witnessScript = null, $isWitness)
     {
+        assert($witnessScript === null || $isWitness);
         $classifier = new OutputClassifier();
         if ($classifier->isMultisig($script)) {
             list ($stackSizes, ) = SizeEstimation::estimateMultisigStackSize(new Multisig($script));
@@ -183,5 +187,46 @@ class SizeEstimation
         }
 
         return self::estimateSizeForStack($stackSizes, $isWitness, $redeemScript, $witnessScript);
+    }
+
+    /**
+     * @param UTXO $utxo
+     * @return array
+     */
+    public static function estimateUtxo(UTXO $utxo) {
+        $classifier = new OutputClassifier();
+        $decodePK = $classifier->decode($utxo->scriptPubKey);
+
+        $witness = false;
+        if ($decodePK->getType() === ScriptType::P2SH) {
+            if (null === $utxo->redeemScript) {
+                throw new \RuntimeException("Can't estimate, missing redeem script");
+            }
+            $decodePK = $classifier->decode($utxo->redeemScript);
+        }
+
+        if ($decodePK->getType() === ScriptType::P2WKH) {
+            $scriptSitu = ScriptFactory::scriptPubKey()->p2pkh($decodePK->getSolution());
+            $decodePK = $classifier->decode($scriptSitu);
+            $witness = true;
+        } else if ($decodePK->getType() === ScriptType::P2WSH) {
+            if (null === $utxo->witnessScript) {
+                throw new \RuntimeException("Can't estimate, missing witness script");
+            }
+            $decodePK = $classifier->decode($utxo->witnessScript);
+            $witness = true;
+        }
+
+        if (!in_array($decodePK->getType(), [ScriptType::MULTISIG, ScriptType::P2PKH, ScriptType::P2PK])) {
+            throw new \RuntimeException("Unsupported script type");
+        }
+
+        $script = $decodePK->getScript();
+        list ($scriptSig, $witness) = SizeEstimation::estimateInputFromScripts($script, $utxo->redeemScript, $utxo->witnessScript, $witness);
+
+        return [
+            "scriptSig" => $scriptSig,
+            "witness" => $witness,
+        ];
     }
 }

@@ -907,7 +907,7 @@ abstract class Wallet implements WalletInterface {
         $inputSize = 0;
         $witnessSize = 0;
         foreach ($utxos as $utxo) {
-            $estimate = $utxo->estimateInputSize();
+            $estimate = SizeEstimation::estimateUtxo($utxo);
             $inputSize += 32 + 4 + 4;
             $inputSize += $estimate['scriptSig'];
             if ($withWitness) {
