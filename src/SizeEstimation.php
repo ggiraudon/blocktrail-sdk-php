@@ -157,8 +157,7 @@ class SizeEstimation
         }
 
         // Make sure to count the CScriptBase length prefix..
-        $scriptVarIntLen = self::getLengthOfVarInt($scriptSigSize);
-        $scriptSigSize += $scriptVarIntLen;
+        $scriptSigSize += self::getLengthOfVarInt($scriptSigSize);
 
         // make sure this is set to 0 when not used.
         // Summing WitnessSize is used in addition to $withWitness
