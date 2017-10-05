@@ -125,7 +125,7 @@ class SizeEstimation
             $scriptSigSizes = [];
             $witnessSizes = $stackSizes;
             if ($witnessScript instanceof ScriptInterface) {
-                $scriptSigSizes[] = $witnessScript->getBuffer()->getSize();
+                $witnessSizes[] = $witnessScript->getBuffer()->getSize();
             }
         } else {
             $scriptSigSizes = $stackSizes;
@@ -196,7 +196,6 @@ class SizeEstimation
     public static function estimateUtxo(UTXO $utxo) {
         $classifier = new OutputClassifier();
         $decodePK = $classifier->decode($utxo->scriptPubKey);
-
         $witness = false;
         if ($decodePK->getType() === ScriptType::P2SH) {
             if (null === $utxo->redeemScript) {
