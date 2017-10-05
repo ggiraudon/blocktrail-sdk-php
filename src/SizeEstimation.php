@@ -64,6 +64,19 @@ class SizeEstimation
     }
 
     /**
+     * @param array $vectorSizes
+     * @return int|mixed
+     */
+    public static function getLengthOfVector(array $vectorSizes)
+    {
+        $vectorSize = self::getLengthOfVarInt(count($vectorSizes));
+        foreach ($vectorSizes as $size) {
+            $vectorSize += self::getLengthOfVarInt($size) + $size;
+        }
+        return $vectorSize;
+    }
+
+    /**
      * @param Multisig $multisig
      * @return array - first is array of stack sizes, second is script len
      */
@@ -154,11 +167,7 @@ class SizeEstimation
         $witnessSize = 0;
         if (count($witnessSizes) > 0) {
             // witness has a prefix indicating `n` elements in vector
-            $witnessSize = self::getLengthOfVarInt(count($witnessSizes));
-            foreach ($witnessSizes as $size) {
-                $witnessSize += self::getLengthOfScriptLengthElement($size);
-                $witnessSize += $size;
-            }
+            $witnessSize = self::getLengthOfVector($witnessSizes);
         }
 
         return [$scriptSigSize, $witnessSize];

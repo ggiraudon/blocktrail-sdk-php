@@ -154,7 +154,7 @@ class SizeEstimationTest extends BlocktrailTestCase
 
         $nestedSig = 1 + 1 + $p2wshScript->getBuffer()->getSize();
         $witSize = 1*(1+0) + 2*(1+SizeEstimation::SIZE_DER_SIGNATURE);
-        $nestedWit = $witSize + 1 + $p2shScriptLen;
+        $nestedWit = $witSize + 1 + 1 + $multisig->getBuffer()->getSize();
         return [
             [$multisig, false, null, null, $bareSig, 0],
             [$multisig, false, $multisig, null, $pshSig, 0],
@@ -209,14 +209,13 @@ class SizeEstimationTest extends BlocktrailTestCase
 
         $nestedSig = 1 + 1 + $p2wshScript->getBuffer()->getSize();
         $witSize = 1*(1+0) + 2*(1+SizeEstimation::SIZE_DER_SIGNATURE);
-        $nestedWit = $witSize + 1 + $p2shScriptLen;
+        $nestedWit = $witSize + 1 + 1 + $multisig->getBuffer()->getSize();
 
         $path = BIP32Path::path("M/9999'/0/1");
 
         $p2shRedeem = new P2shScript($multisig);
         $p2wshRedeem = new WitnessScript($multisig);
         $p2shp2wshRedeem = new P2shScript($p2wshRedeem);
-
         $bareUtxo = new UTXO(str_repeat('41', 32), 0, 100000000, null, $multisig, $path, null, null);
         $p2shUtxo = new UTXO(str_repeat('41', 32), 0, 100000000, null, $p2shRedeem->getOutputScript(), $path, $p2shRedeem, null);
         $p2wshUtxo = new UTXO(str_repeat('41', 32), 0, 100000000, null, $p2wshRedeem->getOutputScript(), $path, null, $p2wshRedeem);
