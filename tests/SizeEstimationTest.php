@@ -12,6 +12,7 @@ use Blocktrail\SDK\SizeEstimation;
 use \BitWasp\Bitcoin\Key\PrivateKeyFactory;
 use Blocktrail\SDK\UTXO;
 use Blocktrail\SDK\Bitcoin\BIP32Path;
+use Blocktrail\SDK\Wallet;
 
 class SizeEstimationTest extends BlocktrailTestCase
 {
@@ -247,4 +248,25 @@ class SizeEstimationTest extends BlocktrailTestCase
         $this->assertEquals($witSize, $est['witness']);
     }
 
+    public function testEquivalentWithOld() {
+        $c = ['L1Tr4rPUi81XN1Dp48iuva5U9sWxU1eipgiAu8BhnB3xnSfGV5rd',
+            'KwUZpCvpAkUe1SZj3k3P2acta1V1jY8Dpuj71bEAukEKVrg8NEym',
+            'Kz2Lm2hzjPWhv3WW9Na5HUKi4qBxoTfv8fNYAU6KV6TZYVGdK5HW',
+        ];
+
+        $pubs = array_map(function ($wif) {
+            return PrivateKeyFactory::fromWif($wif)->getPublicKey();
+        }, $c);
+
+        $multisig = ScriptFactory::scriptPubKey()->multisig(2, $pubs);
+        $p2shRedeem = new P2shScript($multisig);
+
+        $p2shUtxo = new UTXO(str_repeat('41', 32), 0, 100000000, null, $p2shRedeem->getOutputScript(), null, $p2shRedeem);
+
+        $oldTxInEst = Wallet::estimateSizeUTXOs(1);
+        $newScriptEst = SizeEstimation::estimateUtxo($p2shUtxo)['scriptSig'];
+        $newTxInEst = 32 + 4 + 4 + $newScriptEst;
+
+        $this->assertEquals($oldTxInEst, $newTxInEst);
+    }
 }

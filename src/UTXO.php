@@ -33,9 +33,14 @@ class UTXO {
     public $witnessScript;
 
     public function __construct(
-        $hash, $index, $value = null, AddressInterface $address = null,
-        ScriptInterface $scriptPubKey = null, $path = null,
-        ScriptInterface $redeemScript = null, ScriptInterface $witnessScript = null
+        $hash,
+        $index,
+        $value = null,
+        AddressInterface $address = null,
+        ScriptInterface $scriptPubKey = null,
+        $path = null,
+        ScriptInterface $redeemScript = null,
+        ScriptInterface $witnessScript = null
     ) {
         $this->hash = $hash;
         $this->index = $index;

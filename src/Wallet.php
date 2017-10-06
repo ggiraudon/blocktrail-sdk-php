@@ -155,7 +155,8 @@ abstract class Wallet implements WalletInterface {
 
         $this->identifier = $identifier;
         $this->backupPublicKey = BlocktrailSDK::normalizeBIP32Key($backupPublicKey);
-        $this->primaryPublicKeys = BlocktrailSDK::normalizeBIP32KeyArray($primaryPublicKeys);;
+        $this->primaryPublicKeys = BlocktrailSDK::normalizeBIP32KeyArray($primaryPublicKeys);
+        ;
         $this->blocktrailPublicKeys = BlocktrailSDK::normalizeBIP32KeyArray($blocktrailPublicKeys);
 
         $this->network = $network;
@@ -902,8 +903,7 @@ abstract class Wallet implements WalletInterface {
      * @param bool $withWitness
      * @return integer
      */
-    public static function estimateSpendSize(array $utxos, $withWitness)
-    {
+    public static function estimateSpendSize(array $utxos, $withWitness) {
         $inputSize = 0;
         $witnessSize = 0;
         foreach ($utxos as $utxo) {
@@ -940,7 +940,7 @@ abstract class Wallet implements WalletInterface {
      * @param $outputSize
      * @return int
      */
-    public function estimateVsize(array $utxos, $outputSize) {
+    public static function estimateVsize(array $utxos, $outputSize) {
         return (int) ceil(self::estimateWeight($utxos, $outputSize) / 4);
     }
 
