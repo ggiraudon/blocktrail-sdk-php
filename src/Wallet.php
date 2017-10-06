@@ -1047,9 +1047,9 @@ abstract class Wallet implements WalletInterface {
     /**
      * send the transaction using the API
      *
-     * @param string    $signed
-     * @param string[]  $paths
-     * @param bool      $checkFee
+     * @param string|array  $signed
+     * @param string[]      $paths
+     * @param bool          $checkFee
      * @return string           the complete raw transaction
      * @throws \Exception
      */

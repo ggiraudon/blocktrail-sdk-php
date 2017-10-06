@@ -13,6 +13,7 @@ use \BitWasp\Bitcoin\Key\PrivateKeyFactory;
 use Blocktrail\SDK\UTXO;
 use Blocktrail\SDK\Bitcoin\BIP32Path;
 use Blocktrail\SDK\Wallet;
+use Mdanter\Ecc\Crypto\Key\PrivateKeyInterface;
 
 class SizeEstimationTest extends BlocktrailTestCase
 {
@@ -89,6 +90,11 @@ class SizeEstimationTest extends BlocktrailTestCase
             'KwUZpCvpAkUe1SZj3k3P2acta1V1jY8Dpuj71bEAukEKVrg8NEym',
             'Kz2Lm2hzjPWhv3WW9Na5HUKi4qBxoTfv8fNYAU6KV6TZYVGdK5HW',
         ];
+
+        /**
+         * @var PrivateKeyInterface[] $uncompressed
+         * @var PrivateKeyInterface[] $compressed
+         */
         $uncompressed = array_map(function ($wif) {
             return PrivateKeyFactory::fromWif($wif, null);
         }, $u);
@@ -132,6 +138,9 @@ class SizeEstimationTest extends BlocktrailTestCase
         }
     }
 
+    /**
+     * @return array
+     */
     public function multisigFormProvider() {
         $c = ['L1Tr4rPUi81XN1Dp48iuva5U9sWxU1eipgiAu8BhnB3xnSfGV5rd',
             'KwUZpCvpAkUe1SZj3k3P2acta1V1jY8Dpuj71bEAukEKVrg8NEym',
@@ -166,16 +175,16 @@ class SizeEstimationTest extends BlocktrailTestCase
 
     /**
      * @param ScriptInterface $script
-     * @param $isWit
+     * @param bool $isWit
      * @param ScriptInterface|null $rs
      * @param ScriptInterface|null $ws
-     * @param $scriptSigSize
-     * @param $witSize
+     * @param int $scriptSigSize
+     * @param int $witSize
      * @dataProvider multisigFormProvider
      */
     public function testMultisigForms(ScriptInterface $script, $isWit, ScriptInterface $rs = null, ScriptInterface $ws = null, $scriptSigSize, $witSize) {
         $multisig = new Multisig($script);
-        list ($stackSizes, $scriptSize) = SizeEstimation::estimateMultisigStackSize($multisig);
+        list ($stackSizes, ) = SizeEstimation::estimateMultisigStackSize($multisig);
 
         $est = SizeEstimation::estimateSizeForStack($stackSizes, $isWit, $rs, $ws);
         $this->assertInternalType('array', $est);
@@ -186,7 +195,9 @@ class SizeEstimationTest extends BlocktrailTestCase
         $this->assertEquals($witSize, $foundWitSize);
     }
 
-
+    /**
+     * @return array
+     */
     public function multisigUtxoProvider() {
         $c = ['L1Tr4rPUi81XN1Dp48iuva5U9sWxU1eipgiAu8BhnB3xnSfGV5rd',
             'KwUZpCvpAkUe1SZj3k3P2acta1V1jY8Dpuj71bEAukEKVrg8NEym',
@@ -231,12 +242,9 @@ class SizeEstimationTest extends BlocktrailTestCase
     }
 
     /**
-     * @param ScriptInterface $script
-     * @param $isWit
-     * @param ScriptInterface|null $rs
-     * @param ScriptInterface|null $ws
-     * @param $scriptSigSize
-     * @param $witSize
+     * @param UTXO $utxo
+     * @param int $scriptSigSize
+     * @param int $witSize
      * @dataProvider multisigUtxoProvider
      */
     public function testMultisigUtxoForms(UTXO $utxo, $scriptSigSize, $witSize) {
